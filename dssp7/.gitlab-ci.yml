@@ -1,0 +1,29 @@
+#image: amancevice/pandas:0.18-python2
+#image: python:2
+image: python:latest
+cache:
+  paths:
+  - /pip-cache
+  - /apt-cache
+
+before_script:
+  - export APTC=/apt-cache && mkdir -pv $APTC
+  - apt-get update -yq
+  - apt-get -o dir::cache::archives="$APTC" install -y python-dev python-pip tree
+
+mytest:
+  artifacts:
+    paths:
+    - dist
+  script:
+  - pip install pip pip wheel setuptools -U --cache-dir=/pip-cache
+  - pip --version
+  - pip install -r requirements.txt --cache-dir=/pip-cache
+  - pip install .
+  - python setup.py test
+  - python setup.py bdist_wheel
+
+look:
+  stage: deploy
+  script:
+  - ls -lah dist

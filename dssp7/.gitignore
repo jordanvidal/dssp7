@@ -1,0 +1,9 @@
+*.pyc
+*.swp
+build/
+dist/
+*.egg*
+**/.DS_Store
+*/.DS_Store
+.DS_Store
+*/data
