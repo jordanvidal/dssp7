@@ -35,3 +35,4 @@
 03/08/2018 09:16:36 PM :: INFO :: TPE using 8/8 trials with best loss 10.789484
 03/08/2018 09:17:50 PM :: INFO :: tpe_transform took 0.004809 seconds
 03/08/2018 09:17:50 PM :: INFO :: TPE using 9/9 trials with best loss 10.789484
+03/08/2018 09:19:23 PM :: INFO :: 5.1 XGBRegressor with hyperopt parameters
