@@ -1,7 +1,37 @@
-03/07/2018 08:39:07 PM :: INFO :: DATA IMPORT...
-03/07/2018 08:39:09 PM :: INFO :: DATA CLEANING + FE...
-03/07/2018 08:39:22 PM :: INFO :: END CLEANING&FE + START MODELING...
-03/07/2018 08:39:23 PM :: INFO :: 1. LogisticRegression - start fit
-03/07/2018 08:45:17 PM :: INFO :: 1. LogisticRegression - start predict
-03/07/2018 08:45:18 PM :: INFO :: 2. RandomForestRegressor- start fit
-03/07/2018 08:45:25 PM :: INFO :: 2. RandomForestRegressor- start predict
+03/08/2018 08:06:59 PM :: INFO :: DATA IMPORT...
+03/08/2018 08:07:01 PM :: INFO :: DATA CLEANING + FE...
+03/08/2018 08:07:14 PM :: INFO :: END CLEANING&FE + START MODELING...
+03/08/2018 08:07:14 PM :: INFO :: 0. Linear Regression
+03/08/2018 08:07:15 PM :: INFO :: 1. LogisticRegression - start fit
+03/08/2018 08:12:57 PM :: INFO :: 1. LogisticRegression - start predict
+03/08/2018 08:12:57 PM :: INFO :: 2. RF without parameters
+03/08/2018 08:12:57 PM :: INFO :: 2. RandomForestRegressor- start fit
+03/08/2018 08:13:08 PM :: INFO :: 2. RandomForestRegressor- start predict
+03/08/2018 08:13:10 PM :: INFO :: 2. Feature importances...
+03/08/2018 08:13:10 PM :: INFO :: 2. RandomForest - GridSearch
+03/08/2018 08:40:51 PM :: INFO :: 2. Lets try our Best Paramaters to random forest classifier
+03/08/2018 08:42:45 PM :: INFO :: 3. XGBoost
+03/08/2018 08:49:39 PM :: INFO :: 4. Start XGBoost Grid Search
+03/08/2018 08:56:44 PM :: INFO :: 4. End XGBoost Grid Search
+03/08/2018 08:56:44 PM :: INFO :: 4.1 XGBoost with Grid Search parameters
+03/08/2018 08:58:38 PM :: INFO :: 5. Hyperopt
+03/08/2018 08:58:38 PM :: INFO :: tpe_transform took 0.003757 seconds
+03/08/2018 08:58:38 PM :: INFO :: TPE using 0 trials
+03/08/2018 08:59:34 PM :: INFO :: tpe_transform took 0.004000 seconds
+03/08/2018 08:59:34 PM :: INFO :: TPE using 1/1 trials with best loss 11.022314
+03/08/2018 09:00:25 PM :: INFO :: tpe_transform took 0.004691 seconds
+03/08/2018 09:00:25 PM :: INFO :: TPE using 2/2 trials with best loss 10.963485
+03/08/2018 09:02:37 PM :: INFO :: tpe_transform took 0.004046 seconds
+03/08/2018 09:02:37 PM :: INFO :: TPE using 3/3 trials with best loss 10.859818
+03/08/2018 09:03:36 PM :: INFO :: tpe_transform took 0.004295 seconds
+03/08/2018 09:03:36 PM :: INFO :: TPE using 4/4 trials with best loss 10.859818
+03/08/2018 09:06:23 PM :: INFO :: tpe_transform took 0.004758 seconds
+03/08/2018 09:06:23 PM :: INFO :: TPE using 5/5 trials with best loss 10.852415
+03/08/2018 09:07:48 PM :: INFO :: tpe_transform took 0.004491 seconds
+03/08/2018 09:07:48 PM :: INFO :: TPE using 6/6 trials with best loss 10.852415
+03/08/2018 09:09:55 PM :: INFO :: tpe_transform took 0.004586 seconds
+03/08/2018 09:09:55 PM :: INFO :: TPE using 7/7 trials with best loss 10.812570
+03/08/2018 09:16:36 PM :: INFO :: tpe_transform took 0.004167 seconds
+03/08/2018 09:16:36 PM :: INFO :: TPE using 8/8 trials with best loss 10.789484
+03/08/2018 09:17:50 PM :: INFO :: tpe_transform took 0.004809 seconds
+03/08/2018 09:17:50 PM :: INFO :: TPE using 9/9 trials with best loss 10.789484
