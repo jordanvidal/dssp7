@@ -1,3 +1,0 @@
-pandas==0.20.3
-setuptools==36.4.0
-scikit_learn==0.19.1
