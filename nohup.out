@@ -2558,3 +2558,10 @@ Will train until validation_1-rmse hasn't improved in 50 rounds.
 Stopping. Best iteration:
 [70]	validation_0-rmse:9.96616	validation_1-rmse:10.8923
 
+{'colsample_bytree': 0.75, 'gamma': 1.4000000000000001, 'learning_rate': 0, 'max_depth': 2, 'min_child_weight': 1.0, 'n_estimators': 0, 'nthread': 0, 'objective': 0, 'reg_alpha': 0.4, 'reg_lambda': 3.9000000000000004, 'subsample': 1.0}
+dict_keys(['colsample_bytree', 'gamma', 'learning_rate', 'max_depth', 'min_child_weight', 'n_estimators', 'nthread', 'objective', 'reg_alpha', 'reg_lambda', 'subsample'])
+
+
+train error: 9.274
+test error: 10.786
+Hyperopt error:
