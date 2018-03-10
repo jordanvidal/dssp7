@@ -23,6 +23,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestRegressor
+
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import median_absolute_error
@@ -94,12 +95,12 @@ stores = pd.merge(stores, data['as'], how='left', on=['air_store_id'])
 stores['air_genre_name'] = stores['air_genre_name'].map(lambda x: str(str(x).replace('/',' ')))
 stores['air_area_name'] = stores['air_area_name'].map(lambda x: str(str(x).replace('-',' ')))
 #Label encoder pour les air_genre_name and air_area_name
+stores['air_area_name'] = stores['air_area_name'].apply(lambda x: x.split(' ')[0])
 lbl = preprocessing.LabelEncoder()
-for i in range(10):
-    stores['air_genre_name'+str(i)] = lbl.fit_transform(stores['air_genre_name'].map(lambda x: str(str(x).split(' ')[i]) if len(str(x).split(' '))>i else ''))
-    stores['air_area_name'+str(i)] = lbl.fit_transform(stores['air_area_name'].map(lambda x: str(str(x).split(' ')[i]) if len(str(x).split(' '))>i else ''))
-stores['air_genre_name'] = lbl.fit_transform(stores['air_genre_name'])
-stores['air_area_name'] = lbl.fit_transform(stores['air_area_name'])
+lbl.fit(stores['air_area_name'])
+stores['air_area_name'] = lbl.transform(stores['air_area_name'])
+lbl.fit(stores['air_genre_name'])
+stores['air_genre_name'] = lbl.transform(stores['air_genre_name'])
 
 data['hol']['visit_date'] = pd.to_datetime(data['hol']['visit_date'])
 data['hol']['day_of_week'] = lbl.fit_transform(data['hol']['day_of_week'])
@@ -152,109 +153,105 @@ y = train.pop('visitors')
 X_train, X_test, y_train, y_test = train_test_split(train[col], y, test_size=0.2, random_state=42)
 
 
-reg = LinearRegression()
-
-scores = cross_val_score(reg, X_train, y_train, cv=5, scoring='mean_squared_error')
-print("log RMSE: {:.4f} +/-{:.4f}".format(
-    np.mean(np.sqrt(-scores)), np.std(np.sqrt(-scores))))
-
 logging.info('0. Linear Regression')
 lm = LinearRegression().fit(X_train, y_train)
-train_error_lm = round(np.sqrt(mean_squared_error(y_train, lm.predict(X_train))), 3)
-test_error_lm = round(np.sqrt(mean_squared_error(y_test, lm.predict(X_test))), 3)
+train_error_lm = round(mean_squared_error(y_train, lm.predict(X_train)), 3)
+test_error_lm = round(mean_squared_error(y_test, lm.predict(X_test)), 3)
 print("train error: {}".format(train_error_lm))
 print("test error: {}".format(test_error_lm))
 
 
 def test_model(model, X_test, y_test):
     p_test = model.predict_proba(X_test)
-    return np.sqrt(mean_squared_error(y_test, p_test.argmax(axis=1)))
-
-logging.info('1. LogisticRegression')
+    return mean_squared_error(y_test, p_test.argmax(axis=1))
 
 model = LogisticRegression(penalty='l2', C=1.0, n_jobs=4)
+logging.info('1. LogisticRegression - start fit')
 model.fit(X_train, y_train)
+logging.info('1. LogisticRegression - start predict')
 model.predict(X_test)
 score_lr = test_model(model, X_test, y_test)
 print('Logistic Regression score: {}'.format(score_lr))
 
-logging.info('2. RF without optimized parameters')
+logging.info('2. RF without parameters')
 
 rf = RandomForestRegressor(n_jobs=-1)
+logging.info('2. RandomForestRegressor- start fit')
 rf.fit(X_train, y_train)
+logging.info('2. RandomForestRegressor- start predict')
 rf.predict(X_test)
-train_error_rf = round(np.sqrt(mean_squared_error(y_train, rf.predict(X_train))), 3)
-test_error_rf = round(np.sqrt(mean_squared_error(y_test, rf.predict(X_test))), 3)
+train_error_rf = round(mean_squared_error(y_train, rf.predict(X_train)), 3)
+test_error_rf = round(mean_squared_error(y_test, rf.predict(X_test)), 3)
 
-logging.info('3. Feature importances...')
-
-print('RF feature importance: {}'.format(rf.feature_importances_))
+print('RandomForest feature importance: {}'.format(rf.feature_importances_))
+logging.info('2. Feature importances...')
 importances = rf.feature_importances_
-std = np.std([tree.feature_importances_ for tree in rf.estimators_], axis=0)
+std = np.std([tree.feature_importances_ for tree in rf.estimators_],
+             axis=0)
 indices = np.argsort(importances)[::-1]
 dtrain = xgboost.DMatrix(train[col], label=y)
 
-logging.info('4. RandomForest - GridSearch')
+logging.info('2. RandomForest - GridSearch')
 
-params = dict(max_depth=list(range(8, 12)),n_estimators=list(range(30, 110, 10)))
+params = dict(max_depth=list(range(8, 12)),
+              n_estimators=list(range(30, 110, 10)))
 mygcv = GridSearchCV(rf, param_grid=params).fit(X_train, y_train)
-print('RF Tested parameters: {}'.format(mygcv.cv_results_['params']))
-print('RF Best Estimator: {}'.format(mygcv.best_estimator_))
-print('RF Best Parameters: {}'.format(mygcv.best_params_))
+print('Tested parameters: {}'.format(mygcv.cv_results_['params']))
+print('Best Estimator: {}'.format(mygcv.best_estimator_))
+print('Best Parameters: {}'.format(mygcv.best_params_))
 
-logging.info('5. Lets try our Best Paramaters to random forest classifier')
-
+logging.info('2. Lets try our Best Paramaters to random forest classifier')
 rf2 = RandomForestRegressor(n_estimators=90, max_depth=11, random_state=42)
 rf2.fit(X_train, y_train)
-train_error_rf2 = round(np.sqrt(mean_squared_error(y_train, rf2.predict(X_train))), 3)
-test_error_rf2 = round(np.sqrt(mean_squared_error(y_test, rf2.predict(X_test))), 3)
+train_error_rf2 = round(mean_squared_error(y_train, rf2.predict(X_train)), 3)
+test_error_rf2 = round(mean_squared_error(y_test, rf2.predict(X_test)), 3)
 print("train error: {}".format(train_error_rf2))
 print("test error with Best Parameters: {}".format(test_error_rf2))
 print("test error without Best Parameters: {}".format(test_error_rf))
 
-logging.info('6. XGBoost')
+logging.info('3. XGBoost')
 #https://goo.gl/1jQdsF
 params_clf = {'n_estimators': 500, 'max_depth': 4, 'min_samples_split': 2,
           'learning_rate': 0.01, 'loss': 'ls'}
 clf = ensemble.GradientBoostingRegressor(**params_clf)
 clf.fit(X_train, y_train)
-rmse = np.sqrt(mean_squared_error(y_test, clf.predict(X_test)))
-print("RMSE: %.4f" % rmse)
+mse = mean_squared_error(y_test, clf.predict(X_test))
+print("MSE: %.4f" % mse)
 
 xgb = XGBRegressor()
 xgb.fit(X_train, y_train)
 mse_xgb = mean_squared_error(y_test, xgb.predict(X_test))
 print('XGB MSE score: {}'.format(mse_xgb))
-train_error_xgb = round(np.sqrt(mean_squared_error(y_train, xgb.predict(X_train))), 3)
-test_error_xgb = round(np.sqrt(mean_squared_error(y_test, xgb.predict(X_test))), 3)
+train_error_xgb = round(mean_squared_error(y_train, xgb.predict(X_train)), 3)
+test_error_xgb = round(mean_squared_error(y_test, xgb.predict(X_test)), 3)
 print('XGBoost without Grid Search train error: {}'.format(train_error_xgb))
 print('XGBoost without Grid Search test error: {}'.format(test_error_xgb))
 #test_error_xgb = 122.22
 
 params = dict(max_depth=list(range(5, 10)), n_estimators=[100], learning_rate=[0.1])
-logging.info('7. XGBoost Grid Search')
+logging.info('4. Start XGBoost Grid Search')
 grid_search = GridSearchCV(xgb, param_grid=params, n_jobs=4).fit(X_train, y_train)
-logging.info('7.1 End XGBoost Grid Search')
+logging.info('4. End XGBoost Grid Search')
 # summarize the results of the grid search
 print('Best Estimator: {}'.format(grid_search.best_estimator_))
 print('Best Parameters: {}'.format(grid_search.best_params_))
 print('Best Score: {}'.format(grid_search.best_score_))
 print(sorted(grid_search.cv_results_.keys()))
 
-logging.info('8 XGBoost with Grid Search parameters')
+logging.info('4.1 XGBoost with Grid Search parameters')
 
 params = grid_search.best_params_
 xgb_grid = XGBRegressor(**params)
 xgb_grid.fit(X_train, y_train)
-train_error_xgb_grid = round(np.sqrt(mean_squared_error(y_train, xgb_grid.predict(X_train))), 3)
-test_error_xgb_grid = round(np.sqrt(mean_squared_error(y_test, xgb_grid.predict(X_test))), 3)
+train_error_xgb_grid = round(median_absolute_error(y_train, xgb_grid.predict(X_train)), 3)
+test_error_xgb_grid = round(median_absolute_error(y_test, xgb_grid.predict(X_test)), 3)
 print("XGBoost with Grid Search train error: {}".format(train_error_xgb_grid))
 print("XGBoost with Grid Search test error: {}".format(test_error_xgb_grid))
 #test_error_xgb_grid = 4.629
 perf = round((test_error_xgb - test_error_xgb_grid)*100, 2)
 print("Performance between XGBoost with and without Grid Search: +{}%".format(perf))
 
-logging.info('9. Hyperopt')
+logging.info('5. Hyperopt')
 
 
 def get_final_parameters(best_params, origin_model_d, current_model):
@@ -288,14 +285,14 @@ def regression_params_opt(
         y_test):
     print(current_model)
     best = 0
-    max_eval = 100
+    max_eval = 10
     trials = Trials()
 
     def rmse_score(params):
         model_fit = origin_model_d[current_model][0](
             **params).fit(X_train, y_train, eval_set=[(X_train,y_train),(X_test,y_test),],early_stopping_rounds=50)
         y_pred_train = model_fit.predict(X_test)
-        loss = np.sqrt(mean_squared_error(y_test, y_pred_train))**0.5
+        loss = mean_squared_error(y_test, y_pred_train)**0.5
         params['best_iteration'] = model_fit.best_iteration
         list_result_hyperopt.append((loss, params))
         return {'loss': loss, 'status': STATUS_OK}
@@ -341,7 +338,7 @@ if __name__ == '__main__':
 
 loss,params = sorted(list_result_hyperopt)[0]
 
-logging.info('10. XGBRegressor with hyperopt parameters')
+logging.info('5.1 XGBRegressor with hyperopt parameters')
 def RMSLE(y, pred):
     return metrics.mean_squared_error(y, pred)**0.5
 
